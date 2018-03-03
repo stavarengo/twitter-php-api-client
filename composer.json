@@ -1,0 +1,22 @@
+{
+    "name": "stavarengo/twitter-php-api-client",
+    "description": "PHP Client Library for https://developer.twitter.com API",
+    "license": "MIT",
+    "type": "library",
+    "config": {
+        "process-timeout": 5000,
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "Sta\\TwitterPhpApiClient\\": "src/TwitterPhpApiClient/"
+        }
+    },
+    "require": {
+        "php": "^7.1",
+        "guzzlehttp/guzzle": "~6.0",
+        "psr/cache": "^1.0",
+        "psr/container": "^1.0",
+        "psr/http-message": "^1.0"
+    }
+}
