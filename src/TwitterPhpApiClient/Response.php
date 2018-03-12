@@ -50,7 +50,7 @@ class Response implements \JsonSerializable
      */
     public function hasError()
     {
-        $entity = $this->getEntity();
+        $entity = $this->_convertBodyResponseToEntity();
 
         return !$entity || $entity instanceof Errors;
     }
@@ -63,12 +63,10 @@ class Response implements \JsonSerializable
      *
      * @see \Sta\TwitterPhpApiClient\Response::getErrorEntity()
      */
-    public function getEntity(): BaseEntity
+    public function getEntity(?string $entityClassHint = null): BaseEntity
     {
         if (!$this->entity) {
-            $this->entity = BaseEntity::createEntityBasedOnWhatItLooksLike(
-                $this->_convertJsonStringToArray($this->getBodyContents())
-            );
+            $this->entity = $this->_convertBodyResponseToEntity($entityClassHint);
         }
 
         return $this->entity ?: null;
@@ -188,7 +186,7 @@ class Response implements \JsonSerializable
 
     protected function getEntityAndAssertItsClass(string $expectedClass): BaseEntity
     {
-        $entity = $this->getEntity();
+        $entity = $this->getEntity($expectedClass);
         if (!($entity instanceof $expectedClass)) {
             throw new EntityClassNotExpected(
                 sprintf(
@@ -201,6 +199,13 @@ class Response implements \JsonSerializable
         }
 
         return $entity;
+    }
+
+    protected function _convertBodyResponseToEntity(?string $entityClassHint = null): BaseEntity
+    {
+        $data = $this->_convertJsonStringToArray($this->getBodyContents());
+
+        return BaseEntity::createEntityBasedOnWhatItLooksLike($data, $entityClassHint);
     }
 
     /**

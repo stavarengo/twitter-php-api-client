@@ -14,4 +14,19 @@ namespace Sta\TwitterPhpApiClient\Entity;
  */
 class Errors extends BaseEntity
 {
+    public function getErrorByCode(int $code): ?Error
+    {
+        foreach ($this->getErrors() as $error) {
+            if ($error->getCode() == $code) {
+                return $error;
+            }
+        }
+
+        return null;
+    }
+
+    public function hasErrorCode(int $code): bool
+    {
+        return !!$this->getErrorByCode($code);
+    }
 }

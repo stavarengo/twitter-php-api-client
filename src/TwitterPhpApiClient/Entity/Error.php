@@ -16,4 +16,8 @@ namespace Sta\TwitterPhpApiClient\Entity;
 class Error extends BaseEntity
 {
 
+    public function __construct(array $data)
+    {
+        parent::__construct($data);
+    }
 }

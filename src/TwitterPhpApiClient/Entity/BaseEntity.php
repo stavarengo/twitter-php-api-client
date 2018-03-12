@@ -38,15 +38,27 @@ class BaseEntity
         );
     }
 
-    public static function createEntityBasedOnWhatItLooksLike(array $data): BaseEntity
+    public static function createEntityBasedOnWhatItLooksLike(array $data, ?string $entityClassHint = null): BaseEntity
     {
         $class = null;
-        if (isset($data['errors'])) {
+        if (!$data && $entityClassHint) {
+            $class = $entityClassHint;
+        } else if (isset($data['errors'])) {
             $class = Errors::class;
-        } else if (count($data) == 3 && isset($data['code']) && isset($data['message']) && isset($data['label'])) {
+        } else if ($data && (!array_diff(array_keys($data), ['code', 'message'])
+                || !array_diff(array_keys($data), ['code', 'message', 'label']))
+        ) {
             $class = Error::class;
         } else if (count($data) == 2 && isset($data['token_type']) && $data['token_type'] == 'bearer') {
             $class = BearerToken::class;
+        } else if (count($data) == 2 && isset($data['url']['urls']) && isset($data['description']['urls'])) {
+            $class = UserEntities::class;
+        } else if ($data && !array_diff(array_keys($data), ['urls'])) {
+            $class = Urls::class;
+        } else if ($data && !array_diff(array_keys($data), ['url', 'expanded_url', 'display_url', 'indices'])) {
+            $class = Url::class;
+        } else if ($data && !array_diff(array_keys($data), ['text', 'indices'])) {
+            $class = Hashtag::class;
         } else if (isset($data['id']) && isset($data['name']) && isset($data['description'])) {
             $class = User::class;
         } else if (isset($data['entities']['user_mentions']) && array_key_exists('in_reply_to_status_id', $data)
@@ -135,6 +147,8 @@ class BaseEntity
                         },
                         $rawData
                     );
+                } else if (count($rawData) == 0) {
+                    $result = [];
                 } else {
                     $result = self::createEntityBasedOnWhatItLooksLike($rawData);
                 }

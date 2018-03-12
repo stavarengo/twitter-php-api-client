@@ -37,6 +37,10 @@ class TwitterClient
      */
     protected $httpClient;
     /**
+     * @var BearerToken
+     */
+    protected $defaultBearerToken;
+    /**
      * @var \Psr\Cache\CacheItemPoolInterface
      */
     private $cachePoll;
@@ -58,6 +62,12 @@ class TwitterClient
         $this->cachePoll = $cachePoll;
     }
 
+    public function setDefaultBearerToken(BearerToken $bearerToken)
+    {
+        $this->defaultBearerToken = $bearerToken;
+        return $this;
+    }
+
     /**
      * @param string $method
      * @param \Psr\Http\Message\UriInterface $url
@@ -66,8 +76,15 @@ class TwitterClient
      * @return \Sta\TwitterPhpApiClient\Response
      * @throws \Psr\Cache\InvalidArgumentException
      */
-    public function request(string $method, UriInterface $url, array $parameters, array $cacheOptions = []): Response
-    {
+    public function request(
+        string $method, UriInterface $url, array $parameters, array $cacheOptions = [], ?BearerToken $bearerToken = null
+    ): Response {
+        $parameters[RequestOptions::HEADERS] = isset($parameters[RequestOptions::HEADERS]) ? $parameters[RequestOptions::HEADERS] : [];
+        $bearerToken                         = $bearerToken ?: $this->defaultBearerToken;
+        if ($bearerToken && !isset($parameters[RequestOptions::HEADERS]['Authorization'])) {
+            $parameters[RequestOptions::HEADERS]['Authorization'] = $bearerToken;
+        }
+
         $method    = strtoupper($method);
         $cacheItem = null;
         if ($this->cachePoll) {
@@ -165,9 +182,6 @@ class TwitterClient
             new Uri(self::HOST_API . self::VERSION_API . '/users/show.json'),
             [
                 RequestOptions::QUERY => $query,
-                RequestOptions::HEADERS => [
-                    'Authorization' => $bearerToken,
-                ],
             ]
         );
     }
@@ -179,9 +193,6 @@ class TwitterClient
             new Uri(self::HOST_API . self::VERSION_API . '/statuses/user_timeline.json'),
             [
                 RequestOptions::QUERY => $parameters,
-                RequestOptions::HEADERS => [
-                    'Authorization' => $bearerToken,
-                ],
             ]
         );
     }

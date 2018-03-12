@@ -22,7 +22,6 @@ class TwitterClientFactory
      * @return TwitterClient
      * @throws \Psr\Container\ContainerExceptionInterface
      * @throws \Psr\Container\NotFoundExceptionInterface
-     * @throws MissingTwitterConfiguration
      */
     public function __invoke(ContainerInterface $container, $requestedName = null, $options = null)
     {
@@ -37,13 +36,7 @@ class TwitterClientFactory
             $appConfig = $container->get('config');
         }
 
-        if (!isset($appConfig['Sta\TwitterPhpApiClient']['twitter']['apiToken'])) {
-            throw new MissingTwitterConfiguration(
-                'Missing configuration entry "Sta\TwitterPhpApiClient.twitter.apiToken".'
-            );
-        }
-
-        $config = $appConfig['Sta\TwitterPhpApiClient'];
+        $config = isset($appConfig['Sta\TwitterPhpApiClient']) ? $appConfig['Sta\TwitterPhpApiClient'] : [];
 
         $cachePool = null;
         if (isset($options['cachePool'])) {
@@ -54,7 +47,7 @@ class TwitterClientFactory
             $cachePool = $container->get(CacheItemPoolInterface::class);
         }
 
-        return new TwitterClient($config['twitter']['apiToken'], $cachePool);
+        return new TwitterClient($cachePool);
     }
 
     public function createService($serviceLocator)

@@ -21,6 +21,7 @@ namespace Sta\TwitterPhpApiClient\Entity;
  * @method int getFavoriteCount()
  * @method bool getFavorited()
  * @method bool getRetweeted()
+ * @method TweetEntities getEntities()
  */
 class Tweet extends BaseEntity
 {

@@ -23,6 +23,12 @@ namespace Sta\TwitterPhpApiClient\Entity;
  * @method bool isVerified()
  * @method int getStatusesCount()
  * @method string getLang()
+ * @method UserEntities getEntities()
+ * @method \Psr\Http\Message\UriInterface getProfileBackgroundImageUrl()
+ * @method \Psr\Http\Message\UriInterface getProfileBackgroundImageUrlHttps()
+ * @method \Psr\Http\Message\UriInterface getProfileImageUrl()
+ * @method \Psr\Http\Message\UriInterface getProfileImageUrlHttps()
+ * @method \Psr\Http\Message\UriInterface getProfileBannerUrl()
  */
 class User extends BaseEntity
 {
