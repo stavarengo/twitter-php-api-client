@@ -5,7 +5,7 @@
  * @link      ${GITHUB_URL} Source code
  */
 
-namespace Cely\TwitterClient\Middleware;
+namespace Sta\TwitterPhpApiClient\Middleware;
 
 use Cely\Bombadil\LoggerHelper;
 use Interop\Container\ContainerInterface;

@@ -5,7 +5,7 @@
  * @link      ${GITHUB_URL} Source code
  */
 
-namespace Cely\TwitterClient\Middleware\Exception;
+namespace Sta\TwitterPhpApiClient\Middleware\Exception;
 
 class ResponseStringIsNotJson extends \RuntimeException
 {

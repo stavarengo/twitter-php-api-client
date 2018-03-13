@@ -5,10 +5,10 @@
  * @link      ${GITHUB_URL} Source code
  */
 
-namespace Cely\TwitterClient\Middleware;
+namespace Sta\TwitterPhpApiClient\Middleware;
 
 use Cely\Bombadil\LoggerHelper;
-use Cely\TwitterClient\Middleware\Exception\ResponseStringIsNotJson;
+use Sta\TwitterPhpApiClient\Middleware\Exception\ResponseStringIsNotJson;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -16,7 +16,7 @@ use Zend\Json\Json;
 
 class TwitterRequestErrorHandler
 {
-    public const DO_NOT_CHECK_JSON_SYNTAX = '\Cely\TwitterClient\Middleware\TwitterRequestErrorHandler::DO_NOT_CHECK_JSON_SYNTAX';
+    public const DO_NOT_CHECK_JSON_SYNTAX = '\Sta\TwitterPhpApiClient\Middleware\TwitterRequestErrorHandler::DO_NOT_CHECK_JSON_SYNTAX';
     protected static $maxTriesPerError = [
         '_default' => 10,
         404 => 1,

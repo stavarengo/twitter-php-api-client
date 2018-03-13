@@ -7,7 +7,7 @@
 
 namespace Sta\TwitterPhpApiClient;
 
-use Cely\TwitterClient\Middleware\TwitterRequestErrorHandler;
+use Sta\TwitterPhpApiClient\Middleware\TwitterRequestErrorHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\RequestOptions;

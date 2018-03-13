@@ -28,7 +28,7 @@ class ConfigProvider
         return [
             'factories' => [
                 TwitterClient::class => TwitterClientFactory::class,
-                \Cely\TwitterClient\Middleware\TwitterRequestErrorHandler::class => \Cely\TwitterClient\Middleware\TwitterRequestErrorHandlerFactory::class,
+                \Sta\TwitterPhpApiClient\Middleware\TwitterRequestErrorHandler::class => \Sta\TwitterPhpApiClient\Middleware\TwitterRequestErrorHandlerFactory::class,
             ],
             'aliases' => [
             ]

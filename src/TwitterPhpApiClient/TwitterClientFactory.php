@@ -7,7 +7,7 @@
 
 namespace Sta\TwitterPhpApiClient;
 
-use Cely\TwitterClient\Middleware\TwitterRequestErrorHandler;
+use Sta\TwitterPhpApiClient\Middleware\TwitterRequestErrorHandler;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Container\ContainerInterface;
 use Sta\TwitterPhpApiClient\Exception\MissingTwitterConfiguration;
