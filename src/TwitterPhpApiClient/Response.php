@@ -43,16 +43,29 @@ class Response implements \JsonSerializable
         $this->httpResponse = $httpResponse;
     }
 
-    /**
-     * Returns true if the response contains an error.
-     *
-     * @return bool
-     */
-    public function hasError()
+    public function getEntityError(): Errors
     {
-        $entity = $this->_convertBodyResponseToEntity();
+        /** @var Errors $entity */
+        $entity = $this->getEntityAndAssertItsClass(Errors::class);
 
-        return !$entity || $entity instanceof Errors;
+        return $entity;
+    }
+
+    protected function getEntityAndAssertItsClass(string $expectedClass): BaseEntity
+    {
+        $entity = $this->getEntity($expectedClass);
+        if (!($entity instanceof $expectedClass)) {
+            throw new EntityClassNotExpected(
+                sprintf(
+                    'Could not convert data to "%s". It is more like this data represents an "%s" instead of "%s".',
+                    $expectedClass,
+                    get_class($entity),
+                    $expectedClass
+                )
+            );
+        }
+
+        return $entity;
     }
 
     /**
@@ -72,12 +85,56 @@ class Response implements \JsonSerializable
         return $this->entity ?: null;
     }
 
-    public function getEntityError(): Errors
+    protected function _convertBodyResponseToEntity(?string $entityClassHint = null): BaseEntity
     {
-        /** @var Errors $entity */
-        $entity = $this->getEntityAndAssertItsClass(Errors::class);
+        $data = $this->_convertJsonStringToArray($this->getBodyContents());
 
-        return $entity;
+        return BaseEntity::createEntityBasedOnWhatItLooksLike($data, $entityClassHint);
+    }
+
+    /**
+     * Convert the response string we got from Twitter to an PHP object, so we can work with the Twitter data
+     * using type hint from ours IDE and others stuffs.
+     *
+     * @param string $entityClass
+     * @param string $bodyAsJsonString
+     *
+     * @return BaseEntity
+     */
+    protected function _convertJsonStringToArray(string $bodyAsJsonString): array
+    {
+        // Clear json_last_error()
+        json_encode(null);
+
+        $jsonDecodeResult = json_decode($bodyAsJsonString, true);
+        if ($jsonDecodeResult === false || !is_array($jsonDecodeResult)) {
+            throw new InvalidJsonString(
+                sprintf(
+                    'Could not interpret the string as an JSON. JSON error: "%s - %s". String received: %s',
+                    json_last_error(),
+                    json_last_error_msg(),
+                    $bodyAsJsonString
+                )
+            );
+        }
+
+        return $jsonDecodeResult;
+    }
+
+    /**
+     * Returns the current response body content, if there is a current response.
+     * This method exists just to ensure we will not waste time reading the whole stream every time.
+     *
+     * @return string
+     */
+    protected function getBodyContents(): ?string
+    {
+        if ($this->_bodyContents === false) {
+            $this->httpResponse->getBody()->rewind();
+            $this->_bodyContents = $this->httpResponse->getBody()->getContents();
+        }
+
+        return $this->_bodyContents;
     }
 
     public function getEntityBearerToken(): BearerToken
@@ -140,72 +197,15 @@ class Response implements \JsonSerializable
     }
 
     /**
-     * Returns the current response body content, if there is a current response.
-     * This method exists just to ensure we will not waste time reading the whole stream every time.
+     * Returns true if the response contains an error.
      *
-     * @return string
+     * @return bool
      */
-    protected function getBodyContents(): ?string
+    public function hasError()
     {
-        if ($this->_bodyContents === false) {
-            $this->httpResponse->getBody()->rewind();
-            $this->_bodyContents = $this->httpResponse->getBody()->getContents();
-        }
+        $entity = $this->_convertBodyResponseToEntity();
 
-        return $this->_bodyContents;
-    }
-
-    /**
-     * Convert the response string we got from Twitter to an PHP object, so we can work with the Twitter data
-     * using type hint from ours IDE and others stuffs.
-     *
-     * @param string $entityClass
-     * @param string $bodyAsJsonString
-     *
-     * @return BaseEntity
-     */
-    protected function _convertJsonStringToArray(string $bodyAsJsonString): array
-    {
-        // Clear json_last_error()
-        json_encode(null);
-
-        $jsonDecodeResult = json_decode($bodyAsJsonString, true);
-        if ($jsonDecodeResult === false || !is_array($jsonDecodeResult)) {
-            throw new InvalidJsonString(
-                sprintf(
-                    'Could not interpret the string as an JSON. JSON error: "%s - %s". String received: %s',
-                    json_last_error(),
-                    json_last_error_msg(),
-                    $bodyAsJsonString
-                )
-            );
-        }
-
-        return $jsonDecodeResult;
-    }
-
-    protected function getEntityAndAssertItsClass(string $expectedClass): BaseEntity
-    {
-        $entity = $this->getEntity($expectedClass);
-        if (!($entity instanceof $expectedClass)) {
-            throw new EntityClassNotExpected(
-                sprintf(
-                    'Could not convert data to "%s". It is more like this data represents an "%s" instead of "%s".',
-                    $expectedClass,
-                    get_class($entity),
-                    $expectedClass
-                )
-            );
-        }
-
-        return $entity;
-    }
-
-    protected function _convertBodyResponseToEntity(?string $entityClassHint = null): BaseEntity
-    {
-        $data = $this->_convertJsonStringToArray($this->getBodyContents());
-
-        return BaseEntity::createEntityBasedOnWhatItLooksLike($data, $entityClassHint);
+        return !$entity || $entity instanceof Errors;
     }
 
     /**

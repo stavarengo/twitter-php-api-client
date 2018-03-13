@@ -25,63 +25,6 @@ class BaseEntity
      */
     protected $cache = [];
 
-    public static function isArrayOfEntities(array $data)
-    {
-        $isAssociativeArray = array_keys($data) !== range(0, count($data) - 1);
-
-        return array_reduce(
-            $data,
-            function (bool $previousItemWasAEntity, $item) {
-                return $previousItemWasAEntity && is_array($item);
-            },
-            !$isAssociativeArray
-        );
-    }
-
-    public static function createEntityBasedOnWhatItLooksLike(array $data, ?string $entityClassHint = null): BaseEntity
-    {
-        $class = null;
-        if (!$data && $entityClassHint) {
-            $class = $entityClassHint;
-        } else if (isset($data['errors'])) {
-            $class = Errors::class;
-        } else if ($data && (!array_diff(array_keys($data), ['code', 'message'])
-                || !array_diff(array_keys($data), ['code', 'message', 'label']))
-        ) {
-            $class = Error::class;
-        } else if (count($data) == 2 && isset($data['token_type']) && $data['token_type'] == 'bearer') {
-            $class = BearerToken::class;
-        } else if (count($data) == 2 && isset($data['url']['urls']) && isset($data['description']['urls'])) {
-            $class = UserEntities::class;
-        } else if ($data && !array_diff(array_keys($data), ['urls'])) {
-            $class = Urls::class;
-        } else if ($data && !array_diff(array_keys($data), ['url', 'expanded_url', 'display_url', 'indices'])) {
-            $class = Url::class;
-        } else if ($data && !array_diff(array_keys($data), ['text', 'indices'])) {
-            $class = Hashtag::class;
-        } else if (isset($data['id']) && isset($data['name']) && isset($data['description'])) {
-            $class = User::class;
-        } else if (isset($data['entities']['user_mentions']) && array_key_exists('in_reply_to_status_id', $data)
-            && array_key_exists('retweet_count', $data)
-        ) {
-            $class = Tweet::class;
-        } else {
-            if (self::isArrayOfEntities($data)) {
-                $firstEntity = self::createEntityBasedOnWhatItLooksLike(reset($data));
-                if ($firstEntity instanceof Tweet) {
-                    $class = Tweets::class;
-                }
-            }
-        }
-
-        if (!$class) {
-//            throw new UnableToDetectReponseEntityClass();
-            $class = BaseEntity::class;
-        }
-
-        return new $class($data);
-    }
-
     /**
      * BaseEntity constructor.
      *
@@ -196,6 +139,63 @@ class BaseEntity
         }
 
         return $result;
+    }
+
+    public static function isArrayOfEntities(array $data)
+    {
+        $isAssociativeArray = array_keys($data) !== range(0, count($data) - 1);
+
+        return array_reduce(
+            $data,
+            function (bool $previousItemWasAEntity, $item) {
+                return $previousItemWasAEntity && is_array($item);
+            },
+            !$isAssociativeArray
+        );
+    }
+
+    public static function createEntityBasedOnWhatItLooksLike(array $data, ?string $entityClassHint = null): BaseEntity
+    {
+        $class = null;
+        if (!$data && $entityClassHint) {
+            $class = $entityClassHint;
+        } else if (isset($data['errors'])) {
+            $class = Errors::class;
+        } else if ($data && (!array_diff(array_keys($data), ['code', 'message'])
+                || !array_diff(array_keys($data), ['code', 'message', 'label']))
+        ) {
+            $class = Error::class;
+        } else if (count($data) == 2 && isset($data['token_type']) && $data['token_type'] == 'bearer') {
+            $class = BearerToken::class;
+        } else if (count($data) == 2 && isset($data['url']['urls']) && isset($data['description']['urls'])) {
+            $class = UserEntities::class;
+        } else if ($data && !array_diff(array_keys($data), ['urls'])) {
+            $class = Urls::class;
+        } else if ($data && !array_diff(array_keys($data), ['url', 'expanded_url', 'display_url', 'indices'])) {
+            $class = Url::class;
+        } else if ($data && !array_diff(array_keys($data), ['text', 'indices'])) {
+            $class = Hashtag::class;
+        } else if (isset($data['id']) && isset($data['name']) && isset($data['description'])) {
+            $class = User::class;
+        } else if (isset($data['entities']['user_mentions']) && array_key_exists('in_reply_to_status_id', $data)
+            && array_key_exists('retweet_count', $data)
+        ) {
+            $class = Tweet::class;
+        } else {
+            if (self::isArrayOfEntities($data)) {
+                $firstEntity = self::createEntityBasedOnWhatItLooksLike(reset($data));
+                if ($firstEntity instanceof Tweet) {
+                    $class = Tweets::class;
+                }
+            }
+        }
+
+        if (!$class) {
+//            throw new UnableToDetectReponseEntityClass();
+            $class = BaseEntity::class;
+        }
+
+        return new $class($data);
     }
 
     /**

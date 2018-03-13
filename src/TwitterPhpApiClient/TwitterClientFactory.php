@@ -7,12 +7,18 @@
 
 namespace Sta\TwitterPhpApiClient;
 
+use Cely\TwitterClient\Middleware\TwitterRequestErrorHandler;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Container\ContainerInterface;
 use Sta\TwitterPhpApiClient\Exception\MissingTwitterConfiguration;
 
 class TwitterClientFactory
 {
+
+    public function createService($serviceLocator)
+    {
+        return $this->__invoke($serviceLocator, self::class);
+    }
 
     /**
      * @param ContainerInterface $container
@@ -47,11 +53,6 @@ class TwitterClientFactory
             $cachePool = $container->get(CacheItemPoolInterface::class);
         }
 
-        return new TwitterClient($cachePool);
-    }
-
-    public function createService($serviceLocator)
-    {
-        return $this->__invoke($serviceLocator, self::class);
+        return new TwitterClient($container->get(TwitterRequestErrorHandler::class), $cachePool);
     }
 }

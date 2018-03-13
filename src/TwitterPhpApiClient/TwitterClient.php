@@ -7,6 +7,8 @@
 
 namespace Sta\TwitterPhpApiClient;
 
+use Cely\TwitterClient\Middleware\TwitterRequestErrorHandler;
+use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Psr7\Uri;
 use GuzzleHttp\RequestOptions;
 use Psr\Cache\CacheItemPoolInterface;
@@ -45,11 +47,17 @@ class TwitterClient
      */
     private $cachePoll;
 
-    public function __construct(?CacheItemPoolInterface $cachePoll, array $guzzleHttpClientConfig = [])
-    {
+    public function __construct(
+        TwitterRequestErrorHandler $twitterRequestErrorHandler, ?CacheItemPoolInterface $cachePoll,
+        array $guzzleHttpClientConfig = []
+    ) {
+        $stack = HandlerStack::create();
+        $stack->push($twitterRequestErrorHandler->__invoke());
+
         $defaultGuzzleHttpClientConfig = [
             RequestOptions::TIMEOUT => 120,
             RequestOptions::HTTP_ERRORS => false,
+            'handler' => $stack,
         ];
 
         $this->httpClient = new \GuzzleHttp\Client(
@@ -66,6 +74,42 @@ class TwitterClient
     {
         $this->defaultBearerToken = $bearerToken;
         return $this;
+    }
+
+    /**
+     * @see https://developer.twitter.com/en/docs/basics/authentication/api-reference/token
+     *
+     * @param string $consumerKey
+     * @param string $consumerSercret
+     *
+     * @return \Sta\TwitterPhpApiClient\Response
+     * @throws \Psr\Cache\InvalidArgumentException
+     */
+    public function postOauth2Token(string $consumerKey, string $consumerSercret): Response
+    {
+        return $this->request(
+            'POST',
+            new Uri(self::HOST_API . 'oauth2/token'),
+            [
+                RequestOptions::BODY => 'grant_type=client_credentials',
+                RequestOptions::HEADERS => [
+                    'Host' => 'api.twitter.com',
+                    'Content-Type' => 'application/x-www-form-urlencoded;charset=UTF-8',
+                    'Authorization' => sprintf(
+                        'Basic %s',
+                        base64_encode(sprintf('%s:%s', rawurlencode($consumerKey), rawurlencode($consumerSercret)))
+                    ),
+                ],
+            ],
+            [
+                // Second Twitter documentation: "Only one bearer token may exist outstanding for an application, and
+                // repeated requests to this method will yield the same already-existent token until it has been
+                // invalidated. (...) Tokens received by this method should be cached. If attempted too frequently,
+                // requests will be rejected with a HTTP 403 with code 99."
+                // See https://developer.twitter.com/en/docs/basics/authentication/api-reference/token
+                self::CACHE_OPT_EXPIRES_AFTER => new \DateInterval('P10Y'),
+            ]
+        );
     }
 
     /**
@@ -117,42 +161,14 @@ class TwitterClient
         return $response;
     }
 
-    /**
-     * @see https://developer.twitter.com/en/docs/basics/authentication/api-reference/token
-     *
-     * @param string $consumerKey
-     * @param string $consumerSercret
-     *
-     * @return \Sta\TwitterPhpApiClient\Response
-     * @throws \Psr\Cache\InvalidArgumentException
-     */
-    public function postOauth2Token(string $consumerKey, string $consumerSercret): Response
+    private function _getOpt(array $options, $key, $default = null)
     {
-        return $this->request(
-            'POST',
-            new Uri(self::HOST_API . 'oauth2/token'),
-            [
-                RequestOptions::BODY => 'grant_type=client_credentials',
-                RequestOptions::HEADERS => [
-                    'Host' => 'api.twitter.com',
-                    'Content-Type' => 'application/x-www-form-urlencoded;charset=UTF-8',
-                    'Authorization' => sprintf(
-                        'Basic %s',
-                        base64_encode(sprintf('%s:%s', rawurlencode($consumerKey), rawurlencode($consumerSercret)))
-                    ),
-                ],
-            ],
-            [
-                // Second Twitter documentation: "Only one bearer token may exist outstanding for an application, and
-                // repeated requests to this method will yield the same already-existent token until it has been
-                // invalidated. (...) Tokens received by this method should be cached. If attempted too frequently,
-                // requests will be rejected with a HTTP 403 with code 99."
-                // See https://developer.twitter.com/en/docs/basics/authentication/api-reference/token
-                self::CACHE_OPT_EXPIRES_AFTER => new \DateInterval('P10Y'),
-            ]
-        );
-    }
+        if (array_key_exists($key, $options)) {
+            return $options[$key];
+        }
 
+        return $default;
+    }
 
     /**
      * @param string $userIdOrScreenName
@@ -195,14 +211,5 @@ class TwitterClient
                 RequestOptions::QUERY => $parameters,
             ]
         );
-    }
-
-    private function _getOpt(array $options, $key, $default = null)
-    {
-        if (array_key_exists($key, $options)) {
-            return $options[$key];
-        }
-
-        return $default;
     }
 }
