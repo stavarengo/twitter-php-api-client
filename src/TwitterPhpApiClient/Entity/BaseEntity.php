@@ -165,6 +165,11 @@ class BaseEntity
                 || !array_diff(array_keys($data), ['code', 'message', 'label']))
         ) {
             $class = Error::class;
+        } else if ($data && (!array_diff(array_keys($data), ['request', 'error']))) {
+            $data = [
+                'message' => $data['error'],
+            ];
+            $class = Error::class;
         } else if (count($data) == 2 && isset($data['token_type']) && $data['token_type'] == 'bearer') {
             $class = BearerToken::class;
         } else if (count($data) == 2 && isset($data['url']['urls']) && isset($data['description']['urls'])) {

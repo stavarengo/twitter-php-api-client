@@ -15,6 +15,7 @@ namespace Sta\TwitterPhpApiClient\Entity;
  * @method string getDescription()
  * @method \Psr\Http\Message\UriInterface getUrl()
  * @method bool isProtected()
+ * @method bool getProtected()
  * @method int getFollowersCount()
  * @method int getFriendsCount()
  * @method int getListedCount()
