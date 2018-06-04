@@ -7,7 +7,7 @@
 
 namespace Sta\TwitterPhpApiClient\Middleware;
 
-use Cely\Bombadil\LoggerHelper;
+use Cely\BombadilLibrary\LoggerHelper;
 use Sta\TwitterPhpApiClient\Middleware\Exception\ResponseStringIsNotJson;
 use GuzzleHttp\Exception\RequestException;
 use Psr\Http\Message\RequestInterface;
@@ -32,7 +32,7 @@ class TwitterRequestErrorHandler
      */
     private static $tryToAvoidRateLimit = false;
     /**
-     * @var \Cely\Bombadil\LoggerHelper
+     * @var \Cely\BombadilLibrary\LoggerHelper
      */
     private $logger;
 
@@ -215,7 +215,7 @@ class TwitterRequestErrorHandler
             ]
         );
 
-        usleep($delayInMicroSeconds);
+//        usleep($delayInMicroSeconds);
 
         return $this->_performRequest($handler, $request, $options, $tries);
     }

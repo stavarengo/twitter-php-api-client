@@ -7,7 +7,7 @@
 
 namespace Sta\TwitterPhpApiClient\Middleware;
 
-use Cely\Bombadil\LoggerHelper;
+use Cely\BombadilLibrary\LoggerHelper;
 use Interop\Container\ContainerInterface;
 
 class TwitterRequestErrorHandlerFactory
