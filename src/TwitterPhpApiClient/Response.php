@@ -57,10 +57,11 @@ class Response implements \JsonSerializable
         if (!($entity instanceof $expectedClass)) {
             throw new EntityClassNotExpected(
                 sprintf(
-                    'Could not convert data to "%s". It is more like this data represents an "%s" instead of "%s".',
+                    'Could not convert data to "%s". It is more like this data represents an "%s" instead of "%s". Response body: "%s"',
                     $expectedClass,
                     get_class($entity),
-                    $expectedClass
+                    $expectedClass,
+                    $this->getBodyContents() ?? 'NULL'
                 )
             );
         }

@@ -6,16 +6,9 @@ class ConfigProvider
 {
     public function __invoke()
     {
-        return $this->getConfig();
-    }
-
-    public function getConfig()
-    {
-        $config = [
+        return [
             'dependencies' => $this->getDependencyConfig(),
         ];
-
-        return $config;
     }
 
     /**
@@ -29,8 +22,6 @@ class ConfigProvider
             'factories' => [
                 TwitterClient::class => TwitterClientFactory::class,
                 \Sta\TwitterPhpApiClient\Middleware\TwitterRequestErrorHandler::class => \Sta\TwitterPhpApiClient\Middleware\TwitterRequestErrorHandlerFactory::class,
-            ],
-            'aliases' => [
             ]
         ];
     }

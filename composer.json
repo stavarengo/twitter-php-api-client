@@ -12,6 +12,13 @@
             "Sta\\TwitterPhpApiClient\\": "src/TwitterPhpApiClient/"
         }
     },
+    "extra": {
+        "zf": {
+            "component": "Sta\\TwitterPhpApiClient",
+            "module": "Sta\\TwitterPhpApiClient",
+            "config-provider": "Sta\\TwitterPhpApiClient\\ConfigProvider"
+        }
+    },
     "require": {
         "php": "^7.1",
         "guzzlehttp/guzzle": "~6.0",
